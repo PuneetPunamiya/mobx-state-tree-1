@@ -33,5 +33,6 @@ export const ShopStore = types
     .actions((self) => ({
         afterCreate() {
             self.bookStore.loadBooks()
+            self.bookStore.loadCategories()
         }
     }))

@@ -13,13 +13,28 @@ export const Book = types.model("Book", {
     isAvailable: true
 })
 
+export const Tag = types.model({
+    id: types.integer,
+    name: types.string,
+})
+
+export const Category = types.model({
+  id: types.optional(types.integer,1),
+  name: types.optional(types.string,""),
+  tags: types.optional(types.array(Tag), []),
+});
+
 export const BookStore = types
     .model("BookStore", {
         isLoading: true,
-        books: types.map(Book)
+        books: types.map(Book),
+        categories: types.map(Category),
     })
     .views((self) => ({
         get shop() {
+            return getParent(self)
+        },
+        get cat() {
             return getParent(self)
         },
         get sortedAvailableBooks() {
@@ -42,6 +57,7 @@ export const BookStore = types
         const loadBooks = flow(function* loadBooks() {
             try {
                 const json = yield self.shop.fetch("/books.json")
+                // console.log(json)
                 updateBooks(json)
                 markLoading(false)
             } catch (err) {
@@ -49,9 +65,21 @@ export const BookStore = types
             }
         })
 
+        const loadCategories = flow(function* loadCategories() {
+            try {
+                const json = yield self.cat.fetch("/data.json")
+                console.log(json)
+                // updateBooks(json)
+                // markLoading(false)
+            } catch (err) {
+                console.error("Failed to load books ", err)
+            }
+        })
+
         return {
             updateBooks,
-            loadBooks
+            loadBooks,
+            loadCategories
         }
     })
 
